@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strautia Calendar & Event Tracker 2060</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #050811;
+            --panel-bg: rgba(13, 20, 36, 0.75);
+            --panel-border: rgba(0, 243, 255, 0.2);
+            --cyan-glow: #00f3ff;
+            --magenta-glow: #ff007f;
+            --purple-glow: #9d00ff;
+            --amber-glow: #ffb700;
+            --text-main: #e2f1ff;
+            --text-muted: #627d98;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(157, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 40%),
+                linear-gradient(to bottom, #03050a, #080d1a);
+            position: relative;
+        }
+
+        /* Ambient Starfield & Grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, var(--cyan-glow), var(--magenta-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-title i {
+            -webkit-text-fill-color: var(--cyan-glow);
+            filter: drop-shadow(0 0 8px var(--cyan-glow));
+        }
+
+        .time-ratio-badge {
+            background: rgba(255, 0, 127, 0.15);
+            border: 1px solid var(--magenta-glow);
+            color: #ff80bf;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(ff, 0, 127, 0.3);
+        }
+
+        /* Layout Grid */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 25px;
+        }
+
+        /* Cards & Panels */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--cyan-glow);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        /* Clock Displays */
+        .clock-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+        }
+
+        .clock-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .clock-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        .clock-val.strautia {
+            color: var(--magenta-glow);
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+        }
+
+        /* Time Converter */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(5, 8, 17, 0.8);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(157, 0, 255, 0.2));
+            border: 1px solid var(--cyan-glow);
+            color: var(--cyan-glow);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: var(--cyan-glow);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        /* Calendar Controls & Grid */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .cal-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--panel-border);
+            color: var(--cyan-glow);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-icon:hover {
+            background: var(--cyan-glow);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .weekday-label {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 8px 0;
+            text-transform: uppercase;
+        }
+
+        .day-cell {
+            min-height: 100px;
+            background: rgba(5, 8, 17, 0.6);
+            border: 1px solid rgba(0, 243, 255, 0.08);
+            border-radius: 10px;
+            padding: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-cell:hover {
+            border-color: var(--cyan-glow);
+            background: rgba(0, 243, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .day-cell.other-month {
+            opacity: 0.3;
+        }
+
+        .day-cell.today {
+            border: 1px solid var(--magenta-glow);
+            box-shadow: inset 0 0 15px rgba(255, 0, 127, 0.2);
+            background: rgba(255, 0, 127, 0.05);
+        }
+
+        .day-num-strautia {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .day-num-earth {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .event-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: auto;
+        }
+
+        .event-tag {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0, 243, 255, 0.2);
+            color: var(--cyan-glow);
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .event-tag.high {
+            background: rgba(255, 0, 127, 0.2);
+            color: var(--magenta-glow);
+            border-color: rgba(255, 0, 127, 0.4);
+        }
+
+        /* Event Modal / Form */
+        .event-item {
+            background: rgba(5, 8, 17, 0.6);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-info h4 {
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .event-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .delete-btn {
+            color: var(--magenta-glow);
+            cursor: pointer;
+            padding: 5px;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            filter: drop-shadow(0 0 5px var(--magenta-glow));
+        }
+
+        /* Stats & Astro Data */
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            color: var(--cyan-glow);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(0, 243, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand-title">
+                <i class="fa-solid fa-planet-ringed"></i> Strautia 2060
+            </div>
+            <div class="time-ratio-badge">
+                <i class="fa-solid fa-bolt"></i> TỶ LỆ: 3 NGÀY TRÁI ĐẤT = 2 THÁNG STRAUTIA
+            </div>
+        </header>
+
+        <div class="grid-layout">
+            <!-- Sidebar / Control Panel -->
+            <div class="sidebar">
+                <!-- Clock Display Panel -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-clock"></i> Đồng Hồ Chu Kỳ
+                    </div>
+
+                    <div class="clock-card">
+                        <div class="clock-label">
+                            <span>Thời Gian Trái Đất (UTC+7)</span>
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <div class="clock-val" id="earthClock">--:--:--</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;" id="earthDate">--</div>
+                    </div>
+
+                    <div class="clock-card" style="border-color: rgba(255, 0, 127, 0.3);">
+                        <div class="clock-label">
+                            <span>Thời Gian Strautia (2060)</span>
+                            <i class="fa-solid fa-atom"></i>
+                        </div>
+                        <div class="clock-val strautia" id="strautiaClock">--:--:--</div>
+                        <div style="font-size:0.8rem; color:#ff80bf; margin-top:4px;" id="strautiaDate">--</div>
+                    </div>
+                </div>
+
+                <!-- Time Converter Panel -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-calculator"></i> Quy Đổi Thời Gian
+                    </div>
+                    <div class="input-group">
+                        <label>Số Ngày Trái Đất</label>
+                        <input type="number" id="earthDaysInput" class="input-field" placeholder="Nhập số ngày..." value="3">
+                    </div>
+                    <button class="btn" onclick="convertEarthToStrautia()">Quy Đổi Sang Strautia</button>
+                    <div id="convertResult" style="margin-top: 12px; font-size: 0.9rem; color: var(--cyan-glow); text-align: center;"></div>
+                </div>
+
+                <!-- Astro Dashboard -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-chart-network"></i> Chỉ Số Vũ Trụ Strautia
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon"><i class="fa-solid fa-solar-panel"></i></div>
+                        <div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Bão Năng Lượng</div>
+                            <div style="font-weight: 700; color: var(--amber-glow);" id="solarStatus">Mức Độ 3 - Bình Thường</div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon" style="color:var(--magenta-glow); background:rgba(255,0,127,0.1);"><i class="fa-solid fa-moon"></i></div>
+                        <div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Pha Chu Kỳ Nguyên Tố</div>
+                            <div style="font-weight: 700; color: var(--text-main);" id="elementPhase">Nguyên Tố Hỏa (Ignis)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Calendar & Events Panel -->
+            <div class="main-content">
+                <!-- Calendar View -->
+                <div class="panel">
+                    <div class="calendar-header">
+                        <div class="cal-title" id="currentCalTitle">Strautia Month --, 2060</div>
+                        <div class="cal-nav">
+                            <button class="btn-icon" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="btn-icon" onclick="resetToToday()"><i class="fa-solid fa-rotate-right"></i></button>
+                            <button class="btn-icon" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid">
+                        <div class="weekday-label">St-1</div>
+                        <div class="weekday-label">St-2</div>
+                        <div class="weekday-label">St-3</div>
+                        <div class="weekday-label">St-4</div>
+                        <div class="weekday-label">St-5</div>
+                        <div class="weekday-label">St-6</div>
+                        <div class="weekday-label">St-7</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays">
+                        <!-- Dynamic Day Cells -->
+                    </div>
+                </div>
+
+                <!-- Event Management Panel -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-calendar-plus"></i> Thêm Sự Kiện Lịch Strautia 2060
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="eventTitle" class="input-field" placeholder="Tên sự kiện / Nhiệm vụ...">
+                        <input type="text" id="eventDate" class="input-field" placeholder="Ngày Strautia (VD: 15)">
+                        <select id="eventPriority" class="input-field">
+                            <option value="normal">Thường</option>
+                            <option value="high">Ưu Tiên Cao</option>
+                        </select>
+                        <button class="btn" onclick="addEvent()">Thêm</button>
+                    </div>
+
+                    <div id="eventList">
+                        <!-- Dynamic Event Items -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ===================================================
+           STRAUTIA TIME LOGIC (2060)
+           1.5 Earth Days = 1 Strautia Month (45 Earth Days/Year = 30 Strautia Months/Year)
+           Ratio: 1 Strautia Day = 1.5 / 30 = 0.05 Earth Days = 1.2 Earth Hours
+           =================================================== */
+
+        let currentStrautiaMonth = 1;
+        let currentStrautiaYear = 2060;
+        let events = JSON.parse(localStorage.getItem('strautia_events_2060')) || [
+            { id: 1, title: "Thu Thập Năng Lượng Nguyên Tố", dateStr: "10-1-2060", priority: "high" },
+            { id: 2, title: "Họp Hội Đồng Vũ Trụ", dateStr: "15-1-2060", priority: "normal" }
+        ];
+
+        // Anchor Reference Time: Jan 1, 2060 00:00:00 UTC
+        const ANCHOR_EARTH_2060 = new Date("2060-01-01T00:00:00Z").getTime();
+        const EARTH_DAYS_PER_STRAUTIA_MONTH = 1.5; 
+        const STRAUTIA_DAYS_PER_MONTH = 30; // Standard 30 days per month
+        const STRAUTIA_MONTHS_PER_YEAR = 20;
+
+        function updateClocks() {
+            const now = new Date();
+            
+            // Earth Clock Display
+            document.getElementById('earthClock').innerText = now.toLocaleTimeString('vi-VN');
+            document.getElementById('earthDate').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Calculate Strautia Time relative to 2060
+            const elapsedMs = now.getTime() - new Date(now.getFullYear(), 0, 1).getTime();
+            const elapsedEarthDays = elapsedMs / (1000 * 60 * 60 * 24);
+
+            // Strautia calculation: 1.5 earth days = 1 strautia month
+            const elapsedStrautiaMonths = elapsedEarthDays / EARTH_DAYS_PER_STRAUTIA_MONTH;
+            const strautiaMonth = Math.floor(elapsedStrautiaMonths % STRAUTIA_MONTHS_PER_YEAR) + 1;
+            const strautiaDay = Math.floor((elapsedStrautiaMonths % 1) * STRAUTIA_DAYS_PER_MONTH) + 1;
+
+            // Strautia hours/mins
+            const dayProgress = ((elapsedStrautiaMonths % 1) * STRAUTIA_DAYS_PER_MONTH) % 1;
+            const strautiaHours = Math.floor(dayProgress * 24);
+            const strautiaMins = Math.floor((dayProgress * 24 % 1) * 60);
+
+            const sHoursStr = String(strautiaHours).padStart(2, '0');
+            const sMinsStr = String(strautiaMins).padStart(2, '0');
+
+            document.getElementById('strautiaClock').innerText = `${sHoursStr}:${sMinsStr}:00 ST`;
+            document.getElementById('strautiaDate').innerText = `Ngày ${strautiaDay}, Tháng ${strautiaMonth}, Năm 2060 ST`;
+        }
+
+        // Convert Earth Days to Strautia Months
+        function convertEarthToStrautia() {
+            const days = parseFloat(document.getElementById('earthDaysInput').value) || 0;
+            const months = (days / EARTH_DAYS_PER_STRAUTIA_MONTH).toFixed(2);
+            document.getElementById('convertResult').innerText = `⚡ ${days} Ngày Trái Đất = ${months} Tháng Strautia`;
+        }
+
+        // Render Calendar
+        function renderCalendar() {
+            const calDaysContainer = document.getElementById('calendarDays');
+            calDaysContainer.innerHTML = '';
+
+            document.getElementById('currentCalTitle').innerText = `Strautia - Tháng ${currentStrautiaMonth}, ${currentStrautiaYear}`;
+
+            for (let day = 1; day <= STRAUTIA_DAYS_PER_MONTH; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-cell';
+
+                // Check if Today
+                if (day === 12 && currentStrautiaMonth === 1) { // Example active day
+                    dayCell.classList.add('today');
+                }
+
+                // Equivalent Earth Hours (1 Strautia Day = 1.2 Earth Hours)
+                const earthEquivHours = (day * 1.2).toFixed(1);
+
+                // Filter events for this day
+                const dayEvents = events.filter(e => e.dateStr === `${day}-${currentStrautiaMonth}-${currentStrautiaYear}`);
+
+                let eventsHTML = '';
+                dayEvents.forEach(e => {
+                    eventsHTML += `<div class="event-tag ${e.priority}">${e.title}</div>`;
+                });
+
+                dayCell.innerHTML = `
+                    <div class="day-num-strautia">${day}</div>
+                    <div class="day-num-earth">~${earthEquivHours}h Earth</div>
+                    <div class="event-dots">${eventsHTML}</div>
+                `;
+
+                calDaysContainer.appendChild(dayCell);
+            }
+        }
+
+        function changeMonth(delta) {
+            currentStrautiaMonth += delta;
+            if (currentStrautiaMonth > STRAUTIA_MONTHS_PER_YEAR) {
+                currentStrautiaMonth = 1;
+                currentStrautiaYear++;
+            } else if (currentStrautiaMonth < 1) {
+                currentStrautiaMonth = STRAUTIA_MONTHS_PER_YEAR;
+                currentStrautiaYear--;
+            }
+            renderCalendar();
+        }
+
+        function resetToToday() {
+            currentStrautiaMonth = 1;
+            currentStrautiaYear = 2060;
+            renderCalendar();
+        }
+
+        // Event Management
+        function addEvent() {
+            const title = document.getElementById('eventTitle').value.trim();
+            const day = parseInt(document.getElementById('eventDate').value.trim());
+            const priority = document.getElementById('eventPriority').value;
+
+            if (!title || isNaN(day) || day < 1 || day > STRAUTIA_DAYS_PER_MONTH) {
+                alert('Vui lòng nhập tên sự kiện và ngày hợp lệ (1-30)!');
+                return;
+            }
+
+            const newEvent = {
+                id: Date.now(),
+                title: title,
+                dateStr: `${day}-${currentStrautiaMonth}-${currentStrautiaYear}`,
+                priority: priority
+            };
+
+            events.push(newEvent);
+            localStorage.setItem('strautia_events_2060', JSON.stringify(events));
+            
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = '';
+
+            renderCalendar();
+            renderEventList();
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(e => e.id !== id);
+            localStorage.setItem('strautia_events_2060', JSON.stringify(events));
+            renderCalendar();
+            renderEventList();
+        }
+
+        function renderEventList() {
+            const listContainer = document.getElementById('eventList');
+            listContainer.innerHTML = '';
+
+            if (events.length === 0) {
+                listContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:10px;">Chưa có sự kiện nào.</div>';
+                return;
+            }
+
+            events.forEach(e => {
+                const item = document.createElement('div');
+                item.className = 'event-item';
+                item.innerHTML = `
+                    <div class="event-info">
+                        <h4>${e.title}</h4>
+                        <p><i class="fa-solid fa-calendar-day"></i> Ngày ${e.dateStr} | Ưu tiên: <span style="color:${e.priority==='high'?'var(--magenta-glow)':'var(--cyan-glow)'}">${e.priority.toUpperCase()}</span></p>
+                    </div>
+                    <div class="delete-btn" onclick="deleteEvent(${e.id})"><i class="fa-solid fa-trash-can"></i></div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Init
+        setInterval(updateClocks, 1000);
+        updateClocks();
+        convertEarthToStrautia();
+        renderCalendar();
+        renderEventList();
+    </script>
+</body>
+</html>
